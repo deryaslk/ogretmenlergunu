@@ -1570,6 +1570,7 @@
     @media (prefers-reduced-motion: reduce) {
       .envelope-card { animation: none; }
     }
+    .tap-gesture-coach { display: none; }
   </style>
 </head>
 <body data-scene="intro" data-qpage="0">
@@ -2674,6 +2675,11 @@
         confetti.sparkleAtElement(els.mailboxBtn, ["heart", "star", "circle"]);
       }, deliveredAt));
 
+      // Kullanıcı tıklamasa da mektup kendiliğinden açılır (tıklarsa beklemeden açılır)
+      state.timers.push(setTimeout(() => {
+        openEnvelopeOverlay();
+      }, deliveredAt + 1300));
+
       const leaveAt = deliveredAt + 900;
       state.timers.push(setTimeout(() => {
         els.postmanActor.classList.add("is-flipped", "is-walking");
@@ -2701,6 +2707,10 @@
       els.blueMailBtn.classList.remove("step-flap", "step-peek", "step-pull");
 
       setScene("mail");
+
+      state.timers.push(setTimeout(() => {
+        if (state.scene === "mail" && state.envelopePhase === 0) handleBlueEnvelopeClick();
+      }, 1100));
     }
 
     function pullPaperToCenterIntroSlide() {
