@@ -1571,6 +1571,92 @@
       .envelope-card { animation: none; }
     }
     .tap-gesture-coach { display: none; }
+
+    /* ---------- v3: not alanı, özel not vurgusu, imza ---------- */
+    .create-layer { flex-direction: column; }
+    .envelope-card { margin: 0 auto; }
+
+    .note-field { margin: 4px 0 22px; }
+    .addr-optional { font-weight: 700; color: #7c8b97; }
+    .note-field textarea {
+      display: block;
+      width: 100%;
+      min-height: 104px;
+      margin-top: 6px;
+      padding: 13px 14px;
+      border: 2.5px solid #e2bd52;
+      border-radius: 14px;
+      background: #fff6cf;
+      box-shadow: 0 6px 14px -10px rgba(150, 110, 10, 0.6);
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      line-height: 1.5;
+      font-weight: 600;
+      color: var(--text-primary);
+      resize: vertical;
+    }
+    .note-field textarea::placeholder { color: #8e8257; font-weight: 600; }
+    .note-field textarea:focus { outline: 3px solid rgba(47, 111, 181, 0.4); border-color: #2f6fb5; background: #fffbe6; }
+    .note-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .note-meta .note-hint { margin-top: 8px; }
+    .note-count { flex: none; margin-top: 8px; font-size: 0.85rem; font-weight: 800; color: #5d7181; font-variant-numeric: tabular-nums; }
+
+    .teacher-note-card.has-custom-note .note-card-ribbon { background: #d9482e; color: #ffffff; font-size: 0.95rem; padding: 8px 16px; }
+    .teacher-note-card.has-custom-note .note-body {
+      position: relative;
+      margin: 8px 0 20px;
+      padding: 30px 20px 20px;
+      border: 2.5px solid #e9bf45;
+      border-radius: 18px;
+      background: #fff1b8;
+      box-shadow: 0 12px 24px -14px rgba(150, 110, 10, 0.7);
+      font-family: var(--font-display);
+      font-size: clamp(1.14rem, 3.8vw, 1.38rem);
+      line-height: 1.5;
+      font-weight: 800;
+      color: #1b3649;
+      overflow-wrap: anywhere;
+    }
+    .teacher-note-card.has-custom-note .note-body::before {
+      content: "\201C";
+      position: absolute;
+      top: -6px;
+      left: 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 3.4rem;
+      line-height: 1;
+      color: #d9482e;
+    }
+    .celebration-ready .teacher-note-card.has-custom-note .note-body { animation: notePulse 0.9s ease-in-out 2.1s 2; }
+    @keyframes notePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+
+    .credit {
+      margin: 16px auto 0;
+      padding: 7px 16px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.88);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #3d5263;
+    }
+    .credit-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 2px;
+      vertical-align: middle;
+      font-family: var(--font-display);
+      font-weight: 800;
+      color: #1d303f;
+      text-underline-offset: 3px;
+    }
+    .credit-link:focus-visible { outline: 3px solid rgba(47, 111, 181, 0.55); outline-offset: 3px; border-radius: 6px; }
+    .credit-icon { flex: none; }
+    .credit-celebration { opacity: 0; }
+    .celebration-ready .credit-celebration { animation: fadeRise 0.8s var(--ease-spring) 1.6s forwards; }
+    @media (prefers-reduced-motion: reduce) {
+      .celebration-ready .teacher-note-card.has-custom-note .note-body { animation: none; }
+    }
   </style>
 </head>
 <body data-scene="intro" data-qpage="0">
@@ -1673,35 +1759,37 @@
       </div>
 
       <h1 class="create-title">Öğretmenine sürpriz bir sınav gönder</h1>
-      <p class="create-lead">Zarfın üstünü doldur, mektubu hazırla ve linki öğretmenine yolla. Gerisini postacı halleder.</p>
+      <p class="create-lead">Zarfın üstünü doldur, mektubu hazırla ve linki öğretmenine yolla. Hiçbir alan zorunlu değil; boş bırakırsan adsız bir mektup hazırlanır.</p>
+
+      <label class="addr-row" for="in-student">
+        <span class="addr-label">Kimden <span class="addr-optional">(istersen)</span></span>
+        <span class="addr-field">
+          <input type="text" id="in-student" maxlength="30" placeholder="Senin adın" autocomplete="off" autocapitalize="words" enterkeyhint="next" />
+        </span>
+      </label>
 
       <label class="addr-row" for="in-teacher">
-        <span class="addr-label">Kime</span>
+        <span class="addr-label">Kime <span class="addr-optional">(istersen)</span></span>
         <span class="addr-field">
           <input type="text" id="in-teacher" maxlength="30" placeholder="Öğretmeninin adı" autocomplete="off" autocapitalize="words" enterkeyhint="next" />
           <span class="addr-suffix">Öğretmen</span>
         </span>
       </label>
-      <p class="field-error" id="teacher-error" role="alert" hidden>Önce öğretmeninin adını yaz.</p>
 
-      <label class="addr-row" for="in-student">
-        <span class="addr-label">Kimden</span>
-        <span class="addr-field">
-          <input type="text" id="in-student" maxlength="30" placeholder="Senin adın (istersen)" autocomplete="off" autocapitalize="words" enterkeyhint="done" />
-        </span>
-      </label>
-
-      <details class="note-details">
-        <summary>Mektubun sonuna kendi notunu ekle</summary>
-        <textarea id="in-note" rows="3" maxlength="240" placeholder="Boş bırakırsan hazır bir teşekkür notu çıkar."></textarea>
-        <p class="note-hint">Not, linkin içinde taşınır. Linki açan herkes okuyabilir.</p>
-      </details>
+      <div class="note-field">
+        <label class="addr-label" for="in-note">Özel notun <span class="addr-optional">(istersen)</span></label>
+        <textarea id="in-note" rows="3" maxlength="240" placeholder="Öğretmenine söylemek istediğin birkaç cümle yaz…"></textarea>
+        <div class="note-meta">
+          <span class="note-hint">Sınavın sonunda öğretmenine özel not olarak gösterilir. Boş bırakırsan hazır bir teşekkür notu çıkar.</span>
+          <span class="note-count" id="note-count">0 / 240</span>
+        </div>
+      </div>
 
       <button type="submit" class="btn-start-exam create-submit">
         <span aria-hidden="true">💌</span>
         <span>Mektubu hazırla</span>
       </button>
-      <p class="privacy-line">Yazdıkların hiçbir yere kaydedilmez, sadece oluşan linkin içinde durur.</p>
+      <p class="privacy-line">Yazdıkların hiçbir yere kaydedilmez, sadece oluşan linkin içinde durur. Linki açan herkes notu okuyabilir.</p>
     </form>
 
     <div class="envelope-card" id="share-card" hidden>
@@ -1725,9 +1813,11 @@
 
       <div class="share-secondary">
         <button type="button" class="text-btn" id="btn-preview">Önce kendim göreyim</button>
-        <button type="button" class="text-btn" id="btn-edit">Adı değiştir</button>
+        <button type="button" class="text-btn" id="btn-edit">Bilgileri değiştir</button>
       </div>
     </div>
+
+    <p class="credit">Powered by <a class="credit-link" href="https://www.instagram.com/deryaaasolak/" target="_blank" rel="noopener" aria-label="dryslk, Instagram profili (yeni sekmede açılır)"><svg class="credit-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a2 2 0 0 1 2-2h2.2l1.4-2.2h6.8L16.8 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13.2" r="3.6"/></svg><span>dryslk</span></a></p>
   </section>
 
   <!-- ======================================================================
@@ -1844,10 +1934,10 @@
       </span>
     </h1>
 
-    <article class="teacher-note-card">
+    <article class="teacher-note-card" id="teacher-note-card">
       <div class="note-card-ribbon">
         <span>💌</span>
-        <span>Öğretmenime Notum</span>
+        <span id="note-ribbon-text">Öğretmenime Notum</span>
       </div>
       <p class="note-salutation" id="letter-salutation">Sevgili Kemal Öğretmenim,</p>
       <p class="note-body" id="letter-body"></p>
@@ -1863,6 +1953,7 @@
 
     <p class="tap-hint">Ekranda dilediğiniz yere dokunarak ekstra konfeti patlatabilirsiniz ✨</p>
     <a class="make-own-link" id="make-own-link" href="./">Sen de kendi öğretmenine hazırla</a>
+    <p class="credit credit-celebration">Powered by <a class="credit-link" href="https://www.instagram.com/deryaaasolak/" target="_blank" rel="noopener" aria-label="dryslk, Instagram profili (yeni sekmede açılır)"><svg class="credit-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a2 2 0 0 1 2-2h2.2l1.4-2.2h6.8L16.8 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13.2" r="3.6"/></svg><span>dryslk</span></a></p>
   </section>
 
   <script>
@@ -1901,16 +1992,16 @@
       try {
         const hash = (window.location.hash || "").replace(/^#/, "");
         params = new URLSearchParams(hash);
-        if (!params.get("o")) params = new URLSearchParams(window.location.search || "");
+        if (!params.has("m") && !params.get("o")) params = new URLSearchParams(window.location.search || "");
       } catch (e) { return null; }
-      const teacher = temizleIsim(params.get("o"));
-      if (!teacher) return null;
-      return { o: teacher, g: temizleIsim(params.get("g")), n: temizle(params.get("n"), 240) };
+      if (!params.has("m") && !params.get("o")) return null;
+      return { o: temizleIsim(params.get("o")), g: temizleIsim(params.get("g")), n: temizle(params.get("n"), 240) };
     }
 
     function linkOlustur(data) {
       const base = window.location.href.split("#")[0].split("?")[0];
-      let hash = "o=" + encodeURIComponent(data.o);
+      let hash = "m=1";
+      if (data.o) hash += "&o=" + encodeURIComponent(data.o);
       if (data.g) hash += "&g=" + encodeURIComponent(data.g);
       if (data.n) hash += "&n=" + encodeURIComponent(data.n);
       return base + "#" + hash;
@@ -2529,7 +2620,7 @@
 
     function getTeacherName() {
       const raw = (KISISEL_AYARLAR.ogretmenIsmi || "").trim();
-      return raw || "Kemal";
+      return raw;
     }
 
     function getStudentName() {
@@ -2614,13 +2705,17 @@
 
       const teacherName = getTeacherName();
       setScene("intro");
-      document.title = "24 Kasım Öğretmenler Günü — " + teacherName + " Öğretmenimize Sürpriz!";
+      document.title = "24 Kasım Öğretmenler Günü — " + (teacherName ? teacherName + " " : "") + "Öğretmenimize Sürpriz!";
       window.scrollTo(0, 0);
 
-      renderAnimatedSegments(els.introHeadline, [
+      renderAnimatedSegments(els.introHeadline, teacherName ? [
         { text: "Bir 24 Kasım sabahı", highlight: false },
         { text: teacherName, highlight: true },
         { text: "öğretmenin posta kutusuna bir mektup geldi!", highlight: false }
+      ] : [
+        { text: "Bir 24 Kasım sabahı", highlight: false },
+        { text: "öğretmenimizin", highlight: true },
+        { text: "posta kutusuna bir mektup geldi!", highlight: false }
       ]);
 
       els.mailboxFlag.classList.remove("is-up");
@@ -2756,15 +2851,15 @@
 
         const teacherName = getTeacherName();
         const studentName = getStudentName();
-        renderAnimatedSegments(els.mailStoryText, studentName ? [
-          { text: teacherName, highlight: true },
-          { text: "öğretmen posta kutusundaki mektubu alıp açtığında", highlight: false },
+        const kim = teacherName
+          ? [{ text: teacherName, highlight: true }, { text: "öğretmen posta kutusundaki mektubu alıp açtığında", highlight: false }]
+          : [{ text: "Öğretmenimiz", highlight: true }, { text: "posta kutusundaki mektubu alıp açtığında", highlight: false }];
+        renderAnimatedSegments(els.mailStoryText, kim.concat(studentName ? [
           { text: studentName, highlight: true },
           { text: "öğrencisinden bir sınav kâğıdı olduğunu gördü.", highlight: false }
         ] : [
-          { text: teacherName, highlight: true },
-          { text: "öğretmen posta kutusundaki mektubu alıp açtığında bir öğrencisinden sınav kâğıdı olduğunu gördü.", highlight: false }
-        ]);
+          { text: "bir öğrencisinden sınav kâğıdı olduğunu gördü.", highlight: false }
+        ]));
         els.mailStoryBox.classList.add("is-visible");
       }, 600));
 
@@ -2900,12 +2995,22 @@
     function applyPersonalization() {
       const teacher = getTeacherName();
       const student = getStudentName();
-      const note = (KISISEL_AYARLAR.ogretmenimeNot || "").trim() || VARSAYILAN_NOT;
+      const ozelNot = (KISISEL_AYARLAR.ogretmenimeNot || "").trim();
+      const note = ozelNot || VARSAYILAN_NOT;
+      const noteCard = document.getElementById("teacher-note-card");
+      const ribbonText = document.getElementById("note-ribbon-text");
+      if (noteCard && ribbonText) {
+        noteCard.classList.toggle("has-custom-note", !!ozelNot);
+        ribbonText.textContent = ozelNot
+          ? (student ? student + " size özel bir not yazdı" : "Öğrenciniz size özel bir not yazdı")
+          : "Öğretmenime Notum";
+      }
 
+      const hitap = (teacher ? teacher + " " : "") + "Öğretmenim";
       els.celebrationStoryLine.textContent = student
-        ? "Tebrikler " + teacher + " Öğretmenim, " + student + " öğrencinizin hazırladığı sınavı birincilikle geçtiniz! 🌟"
-        : "Tebrikler " + teacher + " Öğretmenim, öğrencinizin hazırladığı sınavı birincilikle geçtiniz! 🌟";
-      els.letterSalutation.textContent = "Sevgili " + teacher + " Öğretmenim,";
+        ? "Tebrikler " + hitap + ", " + student + " öğrencinizin hazırladığı sınavı birincilikle geçtiniz! 🌟"
+        : "Tebrikler " + hitap + ", öğrencinizin hazırladığı sınavı birincilikle geçtiniz! 🌟";
+      els.letterSalutation.textContent = "Sevgili " + hitap + ",";
       els.letterBody.textContent = note;
       els.letterSignature.textContent = student ? "Sevgilerimle, " + student : "Sevgilerimle, öğrenciniz";
     }
@@ -2980,8 +3085,7 @@
       teacher: document.getElementById("in-teacher"),
       student: document.getElementById("in-student"),
       note: document.getElementById("in-note"),
-      noteDetails: document.querySelector(".note-details"),
-      teacherError: document.getElementById("teacher-error"),
+      noteCount: document.getElementById("note-count"),
       shareCard: document.getElementById("share-card"),
       shareTitle: document.getElementById("share-title"),
       shareLead: document.getElementById("share-lead"),
@@ -3003,9 +3107,9 @@
 
     function paylasimiGoster(data) {
       hazirLink = linkOlustur(data);
-      const mesaj = data.o + " Öğretmenim, Öğretmenler Gününüz için size bir sürprizim var 💌";
+      const mesaj = (data.o ? data.o + " " : "") + "Öğretmenim, Öğretmenler Gününüz için size bir sürprizim var 💌";
 
-      cr.shareLead.textContent = data.o + " Öğretmen'e gidecek link bu. Gönder, postacı mektubu ona götürsün.";
+      cr.shareLead.textContent = (data.o ? data.o + " Öğretmen'e" : "Öğretmenine") + " gidecek link bu. Gönder, postacı mektubu ona götürsün.";
       cr.linkBox.textContent = hazirLink;
       cr.btnWa.href = "https://wa.me/?text=" + encodeURIComponent(mesaj + "\n" + hazirLink);
       cr.btnMail.href = "mailto:?subject=" + encodeURIComponent("Öğretmenler Gününüz kutlu olsun 💌") +
@@ -3059,32 +3163,26 @@
 
       let taslak = null;
       try { taslak = JSON.parse(hafizaOku("og_taslak") || "null"); } catch (e) {}
-      if (taslak && taslak.o) {
+      if (taslak) {
         cr.teacher.value = temizleIsim(taslak.o);
         cr.student.value = temizleIsim(taslak.g);
         cr.note.value = temizle(taslak.n, 240);
-        if (cr.note.value) cr.noteDetails.open = true;
         if (hafizaOku("og_asama") === "paylas") paylasimiGoster(formuOku());
       }
 
       cr.form.addEventListener("submit", function (event) {
         event.preventDefault();
-        const data = formuOku();
-        if (!data.o) {
-          cr.teacherError.hidden = false;
-          cr.teacher.focus();
-          return;
-        }
-        cr.teacherError.hidden = true;
-        paylasimiGoster(data);
+        paylasimiGoster(formuOku());
       });
-      cr.teacher.addEventListener("input", function () { cr.teacherError.hidden = true; });
+      function sayaciGuncelle() { cr.noteCount.textContent = cr.note.value.length + " / 240"; }
+      cr.note.addEventListener("input", sayaciGuncelle);
+      sayaciGuncelle();
       cr.btnCopy.addEventListener("click", linkiKopyala);
       cr.btnEdit.addEventListener("click", function () {
         hafizaYaz("og_asama", null);
         cr.shareCard.hidden = true;
         cr.form.hidden = false;
-        cr.teacher.focus();
+        cr.student.focus();
       });
       cr.btnPreview.addEventListener("click", function () {
         hafizaYaz("og_onizleme", "1");
