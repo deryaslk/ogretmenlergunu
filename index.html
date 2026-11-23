@@ -1657,6 +1657,36 @@
     @media (prefers-reduced-motion: reduce) {
       .celebration-ready .teacher-note-card.has-custom-note .note-body { animation: none; }
     }
+
+    /* ---------- v5 ---------- */
+    body { touch-action: manipulation; }
+    .sound-hint {
+      position: fixed;
+      left: 50%;
+      bottom: max(22px, env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 78;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border-radius: var(--radius-pill);
+      background: #1d303f;
+      color: #ffffff;
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px -8px rgba(8, 22, 34, 0.55);
+      pointer-events: none;
+      animation: soundHintPulse 1.5s ease-in-out infinite;
+    }
+    .sound-hint[hidden] { display: none; }
+    @keyframes soundHintPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.06); }
+    }
+    @media (prefers-reduced-motion: reduce) { .sound-hint { animation: none; } }
   </style>
 </head>
 <body data-scene="intro" data-qpage="0">
@@ -1750,6 +1780,7 @@
        0. AŞAMA: HAZIRLAMA EKRANI (linkte öğretmen adı yoksa açılır)
        ====================================================================== -->
   <button type="button" class="preview-back" id="preview-back" hidden>← Paylaşmaya dön</button>
+  <div class="sound-hint" id="sound-hint" aria-hidden="true" hidden><span>🔊</span><span>Müzik için ekrana dokun</span></div>
 
   <section class="create-layer" id="create-layer" hidden>
     <form class="envelope-card" id="create-form" novalidate>
@@ -2055,7 +2086,7 @@
     function isInteractiveTarget(el) {
       while (el && el !== document.body) {
         const tag = (el.tagName || "").toUpperCase();
-        if (tag === "BUTTON" || tag === "A" || tag === "ARTICLE") return true;
+        if (tag === "BUTTON" || tag === "A") return true;
         el = el.parentNode;
       }
       return false;
@@ -3025,8 +3056,24 @@
       if (!sound.muted) {
         sound.unlockAndPlayMusic();
       }
+      sesIpucunuGuncelle();
     }
 
+    // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez; o durumda küçük bir ipucu göster
+    const sesIpucu = document.getElementById("sound-hint");
+    let sesDinleniyor = false;
+    function sesIpucunuGuncelle() {
+      const ctx = sound.ctx;
+      if (ctx && !sesDinleniyor) {
+        sesDinleniyor = true;
+        try { ctx.addEventListener("statechange", sesIpucunuGuncelle); } catch (e) {}
+      }
+      const engelli = state.scene !== "create" && !sound.muted && !!ctx && ctx.state !== "running";
+      sesIpucu.hidden = !engelli;
+    }
+
+    document.addEventListener("pointerdown", handleFirstGesture, true);
+    document.addEventListener("pointerup", handleFirstGesture, true);
     document.addEventListener("click", handleFirstGesture, true);
     document.addEventListener("touchend", handleFirstGesture, true);
     document.addEventListener("keydown", handleFirstGesture, true);
@@ -3045,7 +3092,8 @@
       confetti.celebrateGrand();
     });
 
-    els.celebrationLayer.addEventListener("click", function (event) {
+    document.addEventListener("click", function (event) {
+      if (state.scene !== "celebration") return;
       if (isInteractiveTarget(event.target)) return;
       sound.playPop();
       confetti.spawnBurst({
@@ -3064,6 +3112,7 @@
       els.soundToggle.classList.toggle("muted", nextMuted);
       els.soundToggle.setAttribute("aria-pressed", String(nextMuted));
       if (!nextMuted) sound.playPop();
+      sesIpucunuGuncelle();
     });
 
     document.addEventListener("keydown", function (event) {
@@ -3186,7 +3235,9 @@
       });
       cr.btnPreview.addEventListener("click", function () {
         hafizaYaz("og_onizleme", "1");
-        window.location.href = hazirLink;
+        const yeniHash = "#" + hazirLink.split("#")[1];
+        if (window.location.hash !== yeniHash) { hashYoksay = true; window.location.hash = yeniHash; }
+        mektubuBaslat(formuOku());
       });
     }
 
@@ -3198,13 +3249,17 @@
     }
 
     // Link değişince (önizleme, geri tuşu) sayfayı doğru modda yeniden aç
-    window.addEventListener("hashchange", function () { window.location.reload(); });
+    let hashYoksay = false;
+    window.addEventListener("hashchange", function () {
+      if (hashYoksay) { hashYoksay = false; return; }
+      window.location.reload();
+    });
 
-    const gelenMektup = linktenOku();
-    if (gelenMektup) {
+    function mektubuBaslat(gelenMektup) {
       KISISEL_AYARLAR.ogretmenIsmi = gelenMektup.o;
       KISISEL_AYARLAR.ogrenciIsmi = gelenMektup.g;
       KISISEL_AYARLAR.ogretmenimeNot = gelenMektup.n;
+      cr.layer.hidden = true;
 
       if (hafizaOku("og_onizleme") === "1") {
         cr.previewBack.hidden = false;
@@ -3230,9 +3285,13 @@
       } else {
         startPostmanIntro();
       }
-    } else {
-      hazirlamaEkraniniAc();
+      setTimeout(sesIpucunuGuncelle, 500);
+      setTimeout(sesIpucunuGuncelle, 1600);
     }
+
+    const ilkMektup = linktenOku();
+    if (ilkMektup) mektubuBaslat(ilkMektup);
+    else hazirlamaEkraniniAc();
   </script>
 </body>
 </html>
