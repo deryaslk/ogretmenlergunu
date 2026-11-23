@@ -1820,7 +1820,7 @@
         <span aria-hidden="true">💌</span>
         <span>Mektubu hazırla</span>
       </button>
-      <p class="privacy-line">Yazdıkların hiçbir yere kaydedilmez, sadece oluşan linkin içinde durur. Linki açan herkes notu okuyabilir.</p>
+      <p class="privacy-line">Yazdıkların hiçbir yere kaydedilmez, sadece oluşan linkin içinde durur. Linki açan herkes notu okuyabilir. Yalnızca kaç mektup hazırlandığı anonim olarak sayılır.</p>
     </form>
 
     <div class="envelope-card" id="share-card" hidden>
@@ -2037,6 +2037,52 @@
       if (data.n) hash += "&n=" + encodeURIComponent(data.n);
       return base + "#" + hash;
     }
+
+    /* ========================================================================
+       ANONİM SAYAÇ (GoatCounter)
+       Yalnızca "ne oldu" bilgisi gider: sayfa açıldı, mektup hazırlandı, paylaşıldı.
+       Adlar, not ve link içeriği ASLA gönderilmez. Ekranda hiçbir şey gösterilmez.
+       Kapatmak için SAYAC_ADRESI'ni boş bırakmak yeterli.
+       ======================================================================== */
+    const SAYAC_ADRESI = "https://deryaslk.goatcounter.com/count";
+
+    function sayacKapaliMi() {
+      try {
+        if (!SAYAC_ADRESI) return true;
+        const h = window.location.hostname;
+        if (window.location.protocol === "file:" || !h || h === "localhost" || /^(127\.|10\.|192\.168\.)/.test(h)) return true;
+        if (document.visibilityState === "prerender") return true;
+        if (window.localStorage && window.localStorage.getItem("skipgc") === "t") return true;
+      } catch (e) {}
+      return false;
+    }
+
+    function say(yol, baslik, olayMi) {
+      if (sayacKapaliMi()) return;
+      try {
+        let kaynak = document.referrer || "";
+        if (kaynak.indexOf(window.location.origin) === 0) kaynak = "";
+        const url = SAYAC_ADRESI +
+          "?p=" + encodeURIComponent(yol) +
+          "&t=" + encodeURIComponent(baslik) +
+          "&e=" + (olayMi ? "true" : "false") +
+          "&r=" + encodeURIComponent(kaynak) +
+          "&s=" + encodeURIComponent([window.screen.width, window.screen.height, window.devicePixelRatio || 1].join(",")) +
+          "&rnd=" + Math.random().toString(36).slice(2, 8);
+        if (window.navigator.sendBeacon) window.navigator.sendBeacon(url);
+        else { const img = new Image(); img.src = url; }
+      } catch (e) {}
+    }
+
+    // Kendi ziyaretlerini saymamak için: adresin sonuna #toggle-goatcounter yazıp bir kez aç
+    try {
+      if (window.location.hash === "#toggle-goatcounter") {
+        const kapali = window.localStorage.getItem("skipgc") === "t";
+        if (kapali) window.localStorage.removeItem("skipgc"); else window.localStorage.setItem("skipgc", "t");
+        window.history.replaceState(null, "", window.location.pathname);
+        window.alert(kapali ? "Bu tarayıcıdaki ziyaretlerin yeniden sayılacak." : "Bu tarayıcıdaki ziyaretlerin artık sayılmayacak.");
+      }
+    } catch (e) {}
 
     function hafizaOku(key) { try { return window.sessionStorage.getItem(key); } catch (e) { return null; } }
     function hafizaYaz(key, value) {
@@ -3167,6 +3213,7 @@
 
       cr.btnShare.hidden = !(window.navigator && typeof window.navigator.share === "function");
       cr.btnShare.onclick = function () {
+        say("paylas-menu", "Paylaş: telefon menüsü", true);
         const p = window.navigator.share({ title: "Öğretmenler Günü Sürprizi", text: mesaj, url: hazirLink });
         if (p && p.catch) p.catch(function () {});
       };
@@ -3208,6 +3255,7 @@
     function hazirlamaEkraniniAc() {
       setScene("create");
       document.title = "Öğretmenler Günü Sürprizi — Öğretmenine sınav gönder";
+      say("/hazirla", "Hazırlama ekranı", false);
       cr.layer.hidden = false;
 
       let taslak = null;
@@ -3221,8 +3269,12 @@
 
       cr.form.addEventListener("submit", function (event) {
         event.preventDefault();
+        say("mektup-hazirlandi", "Mektup hazırlandı", true);
         paylasimiGoster(formuOku());
       });
+      cr.btnWa.addEventListener("click", function () { say("paylas-whatsapp", "Paylaş: WhatsApp", true); });
+      cr.btnMail.addEventListener("click", function () { say("paylas-eposta", "Paylaş: e-posta", true); });
+      cr.btnCopy.addEventListener("click", function () { say("paylas-kopyala", "Paylaş: link kopyalama", true); });
       function sayaciGuncelle() { cr.noteCount.textContent = cr.note.value.length + " / 240"; }
       cr.note.addEventListener("input", sayaciGuncelle);
       sayaciGuncelle();
@@ -3290,8 +3342,12 @@
     }
 
     const ilkMektup = linktenOku();
-    if (ilkMektup) mektubuBaslat(ilkMektup);
-    else hazirlamaEkraniniAc();
+    if (ilkMektup) {
+      if (hafizaOku("og_onizleme") !== "1") say("/mektup", "Mektup açıldı", false);
+      mektubuBaslat(ilkMektup);
+    } else {
+      hazirlamaEkraniniAc();
+    }
   </script>
 </body>
 </html>
